@@ -11,7 +11,6 @@ def get_votes():
     return jsonify({
         'councillorVotes': [{
             'id': councillorVote.id,
-            'meeting_id': councillorVote.meeting_id,
             'councillor_id': councillorVote.councillor_id,
             'vote': councillorVote.vote
         } for councillorVote in councillorVotes]
@@ -23,7 +22,6 @@ def get_councillor_vote(vote_id):
     return jsonify({
         'id': councillorVote.id,
         'vote_id': councillorVote.vote_id,
-        'meeting_id': councillorVote.meeting_id,
         'councillor_id': councillorVote.councillor_id,
         'vote': councillorVote.vote
     })
@@ -48,7 +46,6 @@ def create_councillor_vote():
         return jsonify({'error': 'Vote must be one of: yes, no, abstain'}), 400
     
     councillorVote = CouncillorVote(
-        meeting_id=data['meeting_id'],
         vote_id=data['vote_id'],
         councillor_id=data['councillor_id'],
         vote_cast=data['vote_cast'].lower()
@@ -66,7 +63,6 @@ def create_councillor_vote():
     
     return jsonify({
         'id': councillorVote.id,
-        'meeting_id': councillorVote.meeting_id,
         'vote_id': councillorVote.vote_id,
         'councillor_id': councillorVote.councillor_id,
         'vote_cast': councillorVote.vote_cast
