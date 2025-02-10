@@ -1,18 +1,19 @@
 from .database import db
-from datetime import datetime
+from sqlalchemy.dialects.postgresql import UUID
+import uuid
 
 class Meeting(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    title = db.Column(db.String(200), nullable=False)
-    description = db.Column(db.Text, nullable=True)
-    minutes_url = db.Column(db.String(500), nullable=True)
+    id = db.Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    name = db.Column(db.String(200), nullable=False)
+    date = db.Column(db.Date, nullable=False)
+    location = db.Column(db.Text, nullable=True)
+    minutes_fname = db.Column(db.String(500), nullable=True)
     
     def to_dict(self):
         return {
             'id': self.id,
-            'date': self.date.isoformat(),
-            'title': self.title,
-            'description': self.description,
-            'minutes_url': self.minutes_url
+            'name': self.name,
+            'date': self.date,
+            'location': self.location,
+            'minutes_fname': self.minutes_fname
         }
