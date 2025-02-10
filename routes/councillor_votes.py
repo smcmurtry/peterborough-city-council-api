@@ -1,10 +1,11 @@
 from flask import Blueprint, jsonify, request
 from models.councillor_vote import CouncillorVote
+from models.vote import Vote
 from models.database import db
 
-votes_bp = Blueprint('councillor_votes', __name__)
+councillor_votes_bp = Blueprint('councillor_votes', __name__)
 
-@votes_bp.route('/', methods=['GET'])
+@councillor_votes_bp.route('/', methods=['GET'])
 def get_votes():
     councillorVotes = CouncillorVote.query.all()
     return jsonify({
@@ -16,7 +17,7 @@ def get_votes():
         } for councillorVote in councillorVotes]
     })
 
-@votes_bp.route('/<int:vote_id>', methods=['GET'])
+@councillor_votes_bp.route('/<int:vote_id>', methods=['GET'])
 def get_councillor_vote(vote_id):
     councillorVote = CouncillorVote.query.get_or_404(vote_id)
     return jsonify({
@@ -27,7 +28,7 @@ def get_councillor_vote(vote_id):
         'vote': councillorVote.vote
     })
 
-@votes_bp.route('/', methods=['POST'])
+@councillor_votes_bp.route('/', methods=['POST'])
 def create_councillor_vote():
     data = request.get_json()
     
@@ -36,6 +37,11 @@ def create_councillor_vote():
         if not data or not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
     
+    # Validate vote exists
+    vote = Vote.query.get(data['vote_id'])
+    if not vote:
+        return jsonify({'error': 'Vote not found'}), 404
+
     # Validate vote value
     valid_votes_cast = ['yes', 'no', 'abstain']
     if data['vote_cast'].lower() not in valid_votes_cast:
@@ -49,6 +55,13 @@ def create_councillor_vote():
     )
     
     db.session.add(councillorVote)
+    
+    # Update vote counts
+    if data['vote_cast'].lower() == 'yes':
+        vote.votes_for += 1
+    elif data['vote_cast'].lower() == 'no':
+        vote.votes_against += 1
+    
     db.session.commit()
     
     return jsonify({
