@@ -5,9 +5,7 @@ from models.database import db
 
 meetings_bp = Blueprint('meetings', __name__)
 
-@meetings_bp.route('/', methods=['GET'])
-def get_meetings():
-    meetings = Meeting.query.all()
+def jsonify_meeting_list(meetings):
     return jsonify([{
         'id': meeting.id,
         'name': meeting.name,
@@ -15,6 +13,11 @@ def get_meetings():
         'location': meeting.location,
         'minutes_fname': meeting.minutes_fname
     } for meeting in meetings])
+
+@meetings_bp.route('/', methods=['GET'])
+def get_meetings():
+    meetings = Meeting.query.all()
+    return jsonify_meeting_list(meetings)
 
 @meetings_bp.route('/<string:meeting_id>', methods=['GET'])
 def get_meeting(meeting_id):
@@ -28,28 +31,32 @@ def get_meeting(meeting_id):
     })
 
 @meetings_bp.route('/search', methods=['GET'])
-def search_meeting():
+def search_meetings():
     name = request.args.get('name')
     date_str = request.args.get('date')
     
-    if not name or not date_str:
-        return jsonify({'error': 'Both name and date are required query parameters'}), 400
+    if not name and not date_str:
+        return jsonify({'error': 'You must provide a name and/or a date as query parameters'}), 400
+    date = None
+    if date_str:
+        try:
+            # Parse date string in format YYYY-MM-DD
+            date = datetime.strptime(date_str, '%Y-%m-%d').date()
+        except ValueError:
+            return jsonify({'error': 'Date must be in YYYY-MM-DD format'}), 400
+
+    query = Meeting.query
+    if name:
+        query = query.filter(Meeting.name == name)
+    if date:
+        query = query.filter(Meeting.date == date)
+
+    meetings = query.all()
     
-    try:
-        # Parse date string in format YYYY-MM-DD
-        date = datetime.strptime(date_str, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({'error': 'Date must be in YYYY-MM-DD format'}), 400
+    if not meetings:
+        return jsonify({'error': 'Meetings not found'}), 404
     
-    meeting = Meeting.query.filter_by(
-        name=name,
-        date=date
-    ).first()
-    
-    if not meeting:
-        return jsonify({'error': 'Meeting not found'}), 404
-    
-    return jsonify(meeting.to_dict())
+    return jsonify_meeting_list(meetings)
 
 
 @meetings_bp.route('/', methods=['POST'])

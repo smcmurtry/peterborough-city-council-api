@@ -18,7 +18,13 @@
             "settings": {
                 "python.linting.enabled": true,
                 "python.linting.flake8Enabled": true,
-                "python.formatting.provider": "black"
+                "python.formatting.provider": "black",
+                "terminal.integrated.defaultProfile.linux": "zsh",
+                "terminal.integrated.profiles.linux": {
+                    "zsh": {
+                        "path": "/bin/zsh"
+                    }
+                }
             }
         }
     },
