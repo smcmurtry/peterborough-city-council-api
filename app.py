@@ -13,7 +13,7 @@ def create_app():
 
     # Register blueprints with URL prefixes
     app.register_blueprint(councillors_bp, url_prefix='/councillors')
-    app.register_blueprint(councillor_votes_bp, url_prefix='/councillors')
+    app.register_blueprint(councillor_votes_bp, url_prefix='/councillor_votes')
     app.register_blueprint(votes_bp, url_prefix='/votes')
     app.register_blueprint(meetings_bp, url_prefix='/meetings')
     app.register_blueprint(base_bp)

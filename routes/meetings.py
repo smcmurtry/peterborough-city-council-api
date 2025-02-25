@@ -67,10 +67,11 @@ def create_meeting():
         return jsonify({'error': 'name is required'}), 400
     
     meeting = Meeting(
+        id=data['id'],
         name=data['name'],
-        location=data.get('location'),
-        date=data.get('date'),
-        minutes_fname=data.get('minutes_fname')
+        location=data['location'],
+        date=data['date'],
+        minutes_fname=data['minutes_fname']
     )
     
     db.session.add(meeting)

@@ -26,9 +26,10 @@ def create_vote():
             return jsonify({'error': f'{field} is required'}), 400
     
     vote = Vote(
+        id=data["id"],
         title=data['title'],
         meeting_id=data['meeting_id'],
-        carried=data.get('carried', False)
+        carried=data['carried']
     )
     
     db.session.add(vote)

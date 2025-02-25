@@ -23,14 +23,14 @@ def get_councillor_vote(vote_id):
         'id': councillorVote.id,
         'vote_id': councillorVote.vote_id,
         'councillor_id': councillorVote.councillor_id,
-        'vote': councillorVote.vote
+        'vote_cast': councillorVote.vote_cast
     })
 
 @councillor_votes_bp.route('/', methods=['POST'])
 def create_councillor_vote():
     data = request.get_json()
     
-    required_fields = ['meeting_id', 'councillor_id', 'vote_id', 'vote_cast']
+    required_fields = ['councillor_id', 'vote_id', 'vote_cast']
     for field in required_fields:
         if not data or not data.get(field):
             return jsonify({'error': f'{field} is required'}), 400
@@ -41,9 +41,9 @@ def create_councillor_vote():
         return jsonify({'error': 'Vote not found'}), 404
 
     # Validate vote value
-    valid_votes_cast = ['yes', 'no', 'abstain']
+    valid_votes_cast = ['for', 'against', 'abstain']
     if data['vote_cast'].lower() not in valid_votes_cast:
-        return jsonify({'error': 'Vote must be one of: yes, no, abstain'}), 400
+        return jsonify({'error': 'Vote must be one of: for, against, abstain'}), 400
     
     councillorVote = CouncillorVote(
         vote_id=data['vote_id'],
@@ -54,9 +54,9 @@ def create_councillor_vote():
     db.session.add(councillorVote)
     
     # Update vote counts
-    if data['vote_cast'].lower() == 'yes':
+    if data['vote_cast'].lower() == 'for':
         vote.votes_for += 1
-    elif data['vote_cast'].lower() == 'no':
+    elif data['vote_cast'].lower() == 'against':
         vote.votes_against += 1
     
     db.session.commit()
