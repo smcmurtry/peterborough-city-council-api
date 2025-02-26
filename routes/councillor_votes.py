@@ -12,11 +12,12 @@ def get_votes():
         'councillorVotes': [{
             'id': councillorVote.id,
             'councillor_id': councillorVote.councillor_id,
-            'vote': councillorVote.vote
+            'vote_id': councillorVote.vote_id,
+            'vote_cast': councillorVote.vote_cast
         } for councillorVote in councillorVotes]
     })
 
-@councillor_votes_bp.route('/<int:vote_id>', methods=['GET'])
+@councillor_votes_bp.route('/vote/<int:vote_id>', methods=['GET'])
 def get_councillor_vote(vote_id):
     councillorVote = CouncillorVote.query.get_or_404(vote_id)
     return jsonify({
@@ -25,6 +26,30 @@ def get_councillor_vote(vote_id):
         'councillor_id': councillorVote.councillor_id,
         'vote_cast': councillorVote.vote_cast
     })
+
+@councillor_votes_bp.route('/councillor/<string:councillor_id>', methods=['GET'])
+def get_all_votes_for_councillor(councillor_id):
+    councillor_votes = CouncillorVote.query\
+        .join(Vote, CouncillorVote.vote_id == Vote.id)\
+        .filter(CouncillorVote.councillor_id == councillor_id)\
+        .all()
+    
+    if not councillor_votes:
+        return jsonify({'error': 'No votes found for this councillor'}), 404
+    
+    return jsonify([{
+        'id': cv.id,
+        'councillor_id': cv.councillor_id,
+        'vote_cast': cv.vote_cast,
+        'vote': {
+            'id': cv.vote.id,
+            'title': cv.vote.title,
+            'votes_for': cv.vote.votes_for,
+            'votes_against': cv.vote.votes_against,
+            'carried': cv.vote.carried,
+            'meeting_id': cv.vote.meeting_id
+        }
+    } for cv in councillor_votes])
 
 @councillor_votes_bp.route('/', methods=['POST'])
 def create_councillor_vote():

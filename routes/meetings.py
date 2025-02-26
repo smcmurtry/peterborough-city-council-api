@@ -1,4 +1,4 @@
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, make_response
 from models.meeting import Meeting
 from datetime import datetime
 from models.database import db
@@ -17,7 +17,9 @@ def jsonify_meeting_list(meetings):
 @meetings_bp.route('/', methods=['GET'])
 def get_meetings():
     meetings = Meeting.query.all()
-    return jsonify_meeting_list(meetings)
+    response = make_response(jsonify_meeting_list(meetings))
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    return response
 
 @meetings_bp.route('/<string:meeting_id>', methods=['GET'])
 def get_meeting(meeting_id):
